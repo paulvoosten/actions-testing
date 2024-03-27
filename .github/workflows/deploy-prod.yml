@@ -1,0 +1,19 @@
+name: Deploy to PROD environment
+
+on:
+  release:
+    types: [released]
+
+env:
+  ENVIRONMENT: prod
+  OLD_TAG: ${{ github.sha }}
+  NEW_TAG: ${{ github.event.release.tag_name }}
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Prepare environment
+        run: |
+          echo "Old tag: ${OLD_TAG}"
+          echo "New tag: ${NEW_TAG}"

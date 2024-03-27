@@ -1,0 +1,48 @@
+name: Build Docker image
+
+on:
+  pull_request:
+    branches: [main, prod]
+
+env:
+  ENVIRONMENT: ${{ github.base_ref == 'prod' && 'prod' || 'test' }}
+  TAG: ${{ github.event.pull_request.head.sha }}
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Initialize repository
+        uses: actions/checkout@v4
+
+      - name: Build image
+        if: github.base_ref != 'prod' || github.head_ref != 'main'
+        run: echo 'Building image...'
+
+      - name: Tag prod image
+        if: github.base_ref == 'prod' && github.head_ref == 'main'
+        run: |
+          echo 'Tagging prod image'
+          echo "Old tag: ${OLD_TAG}"
+          echo "New tag: ${NEW_TAG}"
+        env:
+          OLD_TAG: ${{ github.event.pull_request.head.sha }}
+          NEW_TAG: ${{ github.sha }}
+
+      - name: Message success
+        if: ${{ success() }}
+        uses: actions/github-script@v4
+        with:
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+          script: |
+            let body = 'Docker image is ready! 💿 (`${{ env.TAG }}`)<br>Image will be deployed to the `${{ env.ENVIRONMENT }}` environment when this pull request is merged';
+            if ('${{ env.ENVIRONMENT }}' == 'prod') {
+              body += ' and a new release has been created';
+            }
+            body += '.';
+            console.log(body);
+
+      - name: Message failure
+        if: ${{ failure() }}
+        run: |
+          echo 'Build failed! ❌'
