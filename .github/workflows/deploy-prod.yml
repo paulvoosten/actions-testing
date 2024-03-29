@@ -13,7 +13,7 @@ jobs:
   deploy-prod:
     runs-on: ubuntu-22.04
     steps:
-      - name: Prepare environment
+      - name: Dump
         run: |
           echo "Old tag: ${OLD_TAG}"
           echo "New tag: ${NEW_TAG}"

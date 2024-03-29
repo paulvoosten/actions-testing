@@ -11,7 +11,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    if: github.base_ref != 'prod' || github.head_ref != 'main'
+    if: github.head_ref != 'prod' && github.head_ref != 'main'
     steps:
       - name: Initialize repository
         uses: actions/checkout@v4
@@ -19,8 +19,8 @@ jobs:
       - name: Build image
         run: echo 'Building image...'
 
-      - name: Message success
-        if: ${{ success() }}
+      - name: Add success message
+        if: success()
         uses: actions/github-script@v4
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
@@ -32,7 +32,7 @@ jobs:
             body += '.';
             console.log(body);
 
-      - name: Message failure
-        if: ${{ failure() }}
+      - name: Add failure message
+        if: failure()
         run: |
           echo 'Build failed! ❌'
