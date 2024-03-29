@@ -2,7 +2,7 @@ name: Deploy to TEST environment
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, prod]
     types: [closed]
 
 env:
@@ -11,17 +11,22 @@ env:
   NEW_TAG: ${{ github.sha }}
 
 jobs:
-  deploy-test:
+  retag-image:
     runs-on: ubuntu-22.04
     if: github.event.pull_request.merged == true
     steps:
-      - name: Message in progress
-        run: echo '${{ env.ENVIRONMENT }} deployment started...'
-
       - name: Dump
         run: |
           echo "Old tag: ${OLD_TAG}"
           echo "New tag: ${NEW_TAG}"
+
+  deploy-test:
+    runs-on: ubuntu-22.04
+    if: github.base_ref == 'main'
+    needs: [retag-image]
+    steps:
+      - name: Message in progress
+        run: echo '${{ env.ENVIRONMENT }} deployment started...'
 
       - name: Message success
         if: ${{ success() }}

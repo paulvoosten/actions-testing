@@ -11,26 +11,16 @@ env:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    if: github.head_ref != 'prod' && github.head_ref != 'main'
     steps:
       - name: Initialize repository
         uses: actions/checkout@v4
 
       - name: Build image
-        if: github.base_ref != 'prod' || github.head_ref != 'main'
         run: echo 'Building image...'
 
-      - name: Tag prod image
-        if: github.base_ref == 'prod' && github.head_ref == 'main'
-        run: |
-          echo 'Tagging prod image'
-          echo "Old tag: ${OLD_TAG}"
-          echo "New tag: ${NEW_TAG}"
-        env:
-          OLD_TAG: ${{ github.event.pull_request.head.sha }}
-          NEW_TAG: ${{ github.sha }}
-
-      - name: Message success
-        if: ${{ success() }}
+      - name: Add success message
+        if: success()
         uses: actions/github-script@v4
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
@@ -42,7 +32,7 @@ jobs:
             body += '.';
             console.log(body);
 
-      - name: Message failure
-        if: ${{ failure() }}
+      - name: Add failure message
+        if: failure()
         run: |
           echo 'Build failed! ❌'
